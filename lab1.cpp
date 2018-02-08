@@ -67,8 +67,8 @@ public:
 	Particle particle[MAX_PARTICLES];
 	int n;
 	Global() {
-		xres = 800;
-		yres = 600;
+		xres = 500;
+		yres = 360;
 		//define a box shape
 		box.width = 100;
 		box.height = 10;
@@ -310,6 +310,12 @@ void render()
 		glVertex2i(-w,  h);
 		glVertex2i( w,  h);
 		glVertex2i( w, -h);
+	glEnd();
+	glBegin(GL_QUADS);
+		glVertex2i(-w + 30, -h - 30);
+		glVertex2i(-w + 30,  h - 30);
+		glVertex2i( w + 30,  h - 30);
+		glVertex2i( w + 30, -h - 30);
 	glEnd();
 	glPopMatrix();
 	//
