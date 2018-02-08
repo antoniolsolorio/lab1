@@ -63,17 +63,19 @@ struct Particle {
 class Global {
 public:
 	int xres, yres;
-	Shape box;
+	Shape box[5];
 	Particle particle[MAX_PARTICLES];
 	int n;
 	Global() {
 		xres = 500;
 		yres = 360;
 		//define a box shape
-		box.width = 100;
-		box.height = 10;
-		box.center.x = 120 + 5*65;
-		box.center.y = 500 - 5*60;
+		for(int i = 0; i < 5; i++) {
+			box[i].width = 75;
+			box[i].height = 10;
+			box[i].center.x = -200 + 5*65 + 35*i;
+			box[i].center.y = 600 - 5*60 - 35*i;
+		}
 		n = 0;
 	}
 } g;
@@ -273,7 +275,7 @@ void movement()
 
 		//check for collision with shapes...
 		//Shape *s;
-		Shape *s = &g.box;
+		Shape *s = &g.box[0];
 		if (p->s.center.y < s->center.y + s->height 
 		    && p->s.center.x > s->center.x - s->width 
 		    && p->s.center.x < s->center.x + s->width
@@ -299,25 +301,22 @@ void render()
 	//draw a box
 	Shape *s;
 	glColor3ub(90,140,90);
-	s = &g.box;
-	glPushMatrix();
-	glTranslatef(s->center.x, s->center.y, s->center.z);
+	s = &g.box[0];
 	float w, h;
 	w = s->width;
 	h = s->height;
-	glBegin(GL_QUADS);
-		glVertex2i(-w, -h);
-		glVertex2i(-w,  h);
-		glVertex2i( w,  h);
-		glVertex2i( w, -h);
-	glEnd();
-	glBegin(GL_QUADS);
-		glVertex2i(-w + 30, -h - 30);
-		glVertex2i(-w + 30,  h - 30);
-		glVertex2i( w + 30,  h - 30);
-		glVertex2i( w + 30, -h - 30);
-	glEnd();
-	glPopMatrix();
+	for(int i = 0; i < 5; i++) {
+		s = &g.box[i];
+		glPushMatrix();
+		glTranslatef(s->center.x, s->center.y, s->center.z);
+		glBegin(GL_QUADS);
+			glVertex2i(-w, -h);
+			glVertex2i(-w,  h);
+			glVertex2i( w,  h);
+			glVertex2i( w, -h);
+		glEnd();
+		glPopMatrix();
+	}
 	//
 	//Draw the particle here
 	
