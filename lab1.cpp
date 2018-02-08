@@ -280,6 +280,7 @@ void movement()
 		    && p->s.center.y > s->center.y - s->height ) {
 	   		p->velocity.y = -p->velocity.y;
 	    		p->velocity.y*= 0.5;
+			p->velocity.x= 0.5;
 		}
 
 		//check for off-screen
