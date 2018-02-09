@@ -40,7 +40,8 @@ using namespace std;
 #include <X11/keysym.h>
 #include <GL/glx.h>
 
-const int MAX_PARTICLES = 2000;
+const int MAX_PARTICLES = 9999;
+
 const float GRAVITY = 0.1;
 
 //some structures
@@ -58,12 +59,14 @@ struct Shape {
 struct Particle {
 	Shape s;
 	Vec velocity;
+	float color[3];
 };
 
 class Global {
 public:
 	int xres, yres;
 	Shape box[5];
+	Shape circle;
 	Particle particle[MAX_PARTICLES];
 	int n;
 	Global() {
@@ -76,6 +79,10 @@ public:
 			box[i].center.x = -200 + 5*65 + 35*i;
 			box[i].center.y = 600 - 5*60 - 35*i;
 		}
+		//define circle
+		circle.radius = 100;
+		circle.center.x = 400;
+		circle.center.y = 400;
 		n = 0;
 	}
 } g;
@@ -194,6 +201,17 @@ void makeParticle(int x, int y)
 	p->s.center.y = y;
 	p->velocity.y = ((float)rand() / (float)RAND_MAX) * 1;
 	p->velocity.x = ((float)rand() / (float)RAND_MAX) * 1 - 0.5;
+	p->color[0] = 0.5;
+	p->color[1] = 0.5;
+	p->color[2] = (((float)rand() / (2*(float)RAND_MAX)) + 0.5);
+	
+//		re *= ((float)rand() / (float)RAND_MAX) * 1;
+//		gr *= ((float)rand() / (float)RAND_MAX) * 1;
+//		bl *= ((float)rand() / (float)RAND_MAX) * 1;
+//		if(re < 50 && gr < 50 && bl < 50) {
+//			re = 255;
+//			gr = 255;
+//			bl = 255;
 
 	++g.n;
 }
@@ -275,14 +293,16 @@ void movement()
 
 		//check for collision with shapes...
 		//Shape *s;
-		Shape *s = &g.box[0];
-		if (p->s.center.y < s->center.y + s->height 
-		    && p->s.center.x > s->center.x - s->width 
-		    && p->s.center.x < s->center.x + s->width
-		    && p->s.center.y > s->center.y - s->height ) {
-	   		p->velocity.y = -p->velocity.y;
-	    		p->velocity.y*= 0.5;
-			p->velocity.x= 0.5;
+		for (int j=0; j<5; j++){
+		    Shape *s = &g.box[j];
+			if (p->s.center.y < s->center.y + s->height 
+			    && p->s.center.x > s->center.x - s->width 
+			    && p->s.center.x < s->center.x + s->width
+			    && p->s.center.y > s->center.y - s->height ) {
+		   		p->velocity.y = -p->velocity.y;
+				p->velocity.y *= (((float)rand() / (4*(float)RAND_MAX)) + 0.5);
+				p->velocity.x  = (((float)rand() / (4*(float)RAND_MAX)) + 0.4);
+			}
 		}
 
 		//check for off-screen
@@ -317,24 +337,58 @@ void render()
 		glEnd();
 		glPopMatrix();
 	}
+
+        
+//circle.radius = 75;
+
+
+	float  x , y  ; 
+	//double radius = 0.1 ; 
+
+	glColor3ub(90, 140, 90); 
+
+         
+        int z = g.circle.center.x 
+	  , r = g.circle.radius
+	  , k = g.circle.center.y ;   
+
+
+	glBegin(GL_TRIANGLE_FAN);
+        //glVertex2f( g.circle.center.x , g.circle.center.y ) ;
+        
+	//
+	for ( int i = 0 ; i < 180 ; i++) {
+		x = r * cos ( i ) - z ; 
+		y = r * sin ( i ) + k ; 
+	        glVertex3f ( x + k , y - z , 0 ) ;
+	        
+	        x = r * cos ( i + 0.1 ) - z ; 	
+	        y = r * sin ( i + 0.1 ) + k ;
+		glVertex3f ( x + z , y -k , 0 ) ; 
+	}
+
+
+	glEnd();
+
+
 	//
 	//Draw the particle here
 	
-	float re, gr, bl;
-	re = 255;
-	gr = 255;
-	bl = 255;
+//	float re, gr, bl;
+//	re = 255;
+//	gr = 255;
+//	bl = 255;
 	for(int i = 0; i < g.n; i++) {
 		glPushMatrix();
-		glColor3ub(re,gr,bl);
-		re *= ((float)rand() / (float)RAND_MAX) * 1;
-		gr *= ((float)rand() / (float)RAND_MAX) * 1;
-		bl *= ((float)rand() / (float)RAND_MAX) * 1;
-		if(re < 50 && gr < 50 && bl < 50) {
-			re = 255;
-			gr = 255;
-			bl = 255;
-		}
+		glColor3fv(g.particle[i].color);
+//		re *= ((float)rand() / (float)RAND_MAX) * 1;
+//		gr *= ((float)rand() / (float)RAND_MAX) * 1;
+//		bl *= ((float)rand() / (float)RAND_MAX) * 1;
+//		if(re < 50 && gr < 50 && bl < 50) {
+//			re = 255;
+//			gr = 255;
+//			bl = 255;
+//		}
 		Vec *c = &g.particle[i].s.center;
 		w =
 		h = 2;
