@@ -38,7 +38,9 @@ using namespace std;
 #include <cmath>
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
+#include <X11/extensions/Xdbe.h>
 #include <GL/glx.h>
+//#include "fonts.h"   // Give up using this library
 
 const int MAX_PARTICLES = 9999;
 
@@ -80,9 +82,9 @@ public:
 			box[i].center.y = 600 - 5*60 - 35*i;
 		}
 		//define circle
-		circle.radius = 100;
-		circle.center.x = 400;
-		circle.center.y = 400;
+		circle.radius = 130;
+		circle.center.x = 375;
+		circle.center.y = 0;
 		n = 0;
 	}
 } g;
@@ -143,6 +145,7 @@ public:
 	void swapBuffers() {
 		glXSwapBuffers(dpy, win);
 	}
+
 } x11;
 
 //Function prototypes
@@ -201,8 +204,8 @@ void makeParticle(int x, int y)
 	p->s.center.y = y;
 	p->velocity.y = ((float)rand() / (float)RAND_MAX) * 1;
 	p->velocity.x = ((float)rand() / (float)RAND_MAX) * 1 - 0.5;
-	p->color[0] = 0.5;
-	p->color[1] = 0.5;
+	p->color[0] = 0.2;
+	p->color[1] = 0.2;
 	p->color[2] = (((float)rand() / (2*(float)RAND_MAX)) + 0.5);
 	
 //		re *= ((float)rand() / (float)RAND_MAX) * 1;
@@ -300,10 +303,31 @@ void movement()
 			    && p->s.center.x < s->center.x + s->width
 			    && p->s.center.y > s->center.y - s->height ) {
 		   		p->velocity.y = -p->velocity.y;
-				p->velocity.y *= (((float)rand() / (4*(float)RAND_MAX)) + 0.5);
-				p->velocity.x  = (((float)rand() / (4*(float)RAND_MAX)) + 0.4);
+				p->velocity.y *= (((float)rand() / (4*(float)RAND_MAX)) + 0.3);
+				p->velocity.x  = (((float)rand() / (4*(float)RAND_MAX)) + 0.5);
 			}
 		}
+
+		//check for collision with circle
+
+		float squared_x = (p->s.center.x - g.circle.center.x)*(p->s.center.x - g.circle.center.x);
+		float squared_y = (p->s.center.y - g.circle.center.y)*(p->s.center.y - g.circle.center.y);
+
+		if (sqrt(squared_x +squared_y) < g.circle.radius)
+		{
+		    if (p->s.center.x < g.circle.center.x)
+		    {
+			p->velocity.y = -p->velocity.y;
+			p->velocity.y *= (((float)rand() / (4*(float)RAND_MAX)) + 0.2);
+			p->velocity.x -= 0.1;
+		    }
+		    else {
+			p->velocity.y = -p->velocity.y;
+			p->velocity.y *= (((float)rand() / (4*(float)RAND_MAX)) + 0.2);
+			p->velocity.x += 0.1;
+		    }
+		}
+
 
 		//check for off-screen
 		if (p->s.center.y < 0.0 || p->s.center.y > 600) {
@@ -320,6 +344,8 @@ void render()
 	//
 	//draw a box
 	Shape *s;
+         
+
 	glColor3ub(90,140,90);
 	s = &g.box[0];
 	float w, h;
@@ -336,36 +362,25 @@ void render()
 			glVertex2i( w, -h);
 		glEnd();
 		glPopMatrix();
-	}
+                
+	}  
 
-        
-//circle.radius = 75;
-
-
+	
+	
 	float  x , y  ; 
-	//double radius = 0.1 ; 
 
 	glColor3ub(90, 140, 90); 
-
-         
-        int z = g.circle.center.x 
-	  , r = g.circle.radius
-	  , k = g.circle.center.y ;   
-
-
 	glBegin(GL_TRIANGLE_FAN);
-        //glVertex2f( g.circle.center.x , g.circle.center.y ) ;
-        
-	//
-	for ( int i = 0 ; i < 180 ; i++) {
-		x = r * cos ( i ) - z ; 
-		y = r * sin ( i ) + k ; 
-	        glVertex3f ( x + k , y - z , 0 ) ;
-	        
-	        x = r * cos ( i + 0.1 ) - z ; 	
-	        y = r * sin ( i + 0.1 ) + k ;
-		glVertex3f ( x + z , y -k , 0 ) ; 
+	for (int i=0; i<180; i++){
+	    x = g.circle.radius * cos(i) + g.circle.center.x;
+	    y = g.circle.radius * sin(i) + g.circle.center.y;
+	    glVertex3f (x, y, 0);
+
+	    x = g.circle.radius * cos(i+0.1) + g.circle.center.x;
+	    y = g.circle.radius * sin(i+0.1) + g.circle.center.y;
+	    glVertex3f (x, y, 0);
 	}
+
 
 
 	glEnd();
